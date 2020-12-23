@@ -9,7 +9,18 @@
 \begin{document}
 \maketitle
 \section{Infrastructure}
-Les utilisateurs de twitter produisent environs $504.10^6$ tweets par jours. Sachant que 1 tweet fait environ 5Ko.
-\[ 504.10^6 \times 5 = 252.10^7 Ko = 2.52 To\].
-Notre Cluster possède actuellement xx To de stockage. Donc on peut stocker:
+\begin{itemize}
+    \item Les utilisateurs de twitter produisent environs $504.10^6$ tweets par jours. Sachant que 1 tweet fait environ 5Ko.
+    \[ 504.10^6 \times 5 \times 3 = 756.10^7 Ko = 7,56 To\]
+    Notre Cluster possède actuellement 18.16To de stockage. Donc on peut stocker:
+    \[  \frac{18,16}{7,56} \approx 2,40\]
+    un peu plus de 2 jours de tweet.
+    
+    \item Pour 2 jour de tweet on obtient un total de $7,56 \times 2 = 15To$. Un blocs faisant 128Mo on obtient 117187 blocs disponnibles.
+    \[ \frac{1,5.10^7}{128} \approx 117187\]
+
+    \item 5ans de tweets équivaut à  $7,56 \times 365 \times 5 = 13797To $ de données.
+    
+\end{itemize}
+
 \end{document}
