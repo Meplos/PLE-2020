@@ -45,7 +45,7 @@
   			<configuration>
   				<archive>
   					<manifest>
-  						<mainClass>bigdata.TPSpark</mainClass>
+  						<mainClass>bigdata.CovidEvolution</mainClass>
   					</manifest>
   				</archive>
   			</configuration>

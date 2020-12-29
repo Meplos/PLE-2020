@@ -73,9 +73,9 @@ public class TotalImpressionsByUser extends Configured implements Tool{
             JsonObject tweetJSON = parser.parse(value.toString()).getAsJsonObject();
             
             // On créé un user avec les données JSON
-            Tweet tweet = new Tweet(tweetJSON.get("id_str"),tweetJSON.get("retweet_count"),tweetJSON.get("favorite_count"),tweetJSON.get("reply_count"));
+            Tweet tweet = new Tweet(tweetJSON.get("id_str").toString(),tweetJSON.get("retweet_count").getAsInt(),tweetJSON.get("favorite_count").getAsInt(),tweetJSON.get("reply_count").getAsInt());
 			Text id = new Text();
-            id.set(tweetJSON.get("id_str"));
+            id.set(tweetJSON.get("id_str").toString());
             
             // On renvoie le couple id (Text) / user (User)
 			context.write(id, tweet);
@@ -92,7 +92,7 @@ public class TotalImpressionsByUser extends Configured implements Tool{
                 fav_total = fav_total + tweet.fav_total;
                 rep_total = rep_total + tweet.rep_total;
 			}
-			context.write(key, new Text("Total RT : "+rt_total," Total Fav : "+fav_total," Total Reply : "+rep_total));
+			context.write(key, new Text("Total RT : "+Integer.toString(rt_total)+" Total Fav : "+Integer.toString(fav_total)+" Total Reply : "+Integer.toString(rep_total)));
 		}
 	}
 
@@ -102,26 +102,31 @@ public class TotalImpressionsByUser extends Configured implements Tool{
         job.setJarByClass(TotalImpressionsByUser.class);
         
         job.setMapOutputKeyClass(Text.class);
-		job.setMapOutputValueClass(User.class);
+		job.setMapOutputValueClass(Tweet.class);
 		job.setOutputKeyClass(Text.class);
 		job.setOutputValueClass(Text.class);
 		job.setOutputFormatClass(TextOutputFormat.class);
 		job.setInputFormatClass(TextInputFormat.class);
-		try {
+
+		/*try {
 			FileInputFormat.addInputPath(job, new Path(args[0]));
 			FileOutputFormat.setOutputPath(job, new Path(args[1]));
 		} 
 		catch (Exception e) {
 			System.out.println(" bad arguments, waiting for 2 arguments [inputURI] [outputURI]");
 			return -1;
-		}
+		}*/
+
+		TextInputFormat.addInputPath(job, new Path(args[0]));
+		TextOutputFormat.setOutputPath(job, new Path(args[1]));
+
 		job.setMapperClass(TotalImpressionsByUserMapper.class);
 		job.setReducerClass(TotalImpressionsByUserReducer.class);
 		return job.waitForCompletion(true) ? 0 : 1;
 	}
 
 	public static void main(String args[]) throws Exception {
-		System.exit(ToolRunner.run(new FilterCities(), args));
+		System.exit(ToolRunner.run(new TotalImpressionsByUser(), args));
 	}
 
 }

@@ -7,9 +7,9 @@ public class Patterns {
 		ProgramDriver pgd = new ProgramDriver();
 		int exitCode = -1;
 		try {
-			pgd.addClass("rsjoin", bigdata.Joiner.class, "make a reduce-side join : cities regions result");
+			/*pgd.addClass("rsjoin", bigdata.Joiner.class, "make a reduce-side join : cities regions result");
 			pgd.addClass("sortedjoin", bigdata.SortedJoiner.class, "make a sorted reduce-side join : cities regions result");
-			pgd.addClass("topk", bigdata.TopK.class, "find top k elements : k input output");
+			pgd.addClass("topk", bigdata.TopK.class, "find top k elements : k input output");*/
 			exitCode = pgd.run(args);
 		} catch (Throwable e1)  {
 			e1.printStackTrace();
