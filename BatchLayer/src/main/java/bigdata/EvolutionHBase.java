@@ -118,7 +118,8 @@ public class EvolutionHBase extends Configured implements Tool{
 		Configuration conf = new Configuration();
 		String word = "";
 		word = args[0];
-		conf.set("word", word);
+        conf.set("word", word);
+        conf.set(TableOutputFormat.OUTPUT_TABLE, "gresse_word_pop");
 		
 		Job job = Job.getInstance(conf, "EvolutionInMarchHBase");
 		job.setNumReduceTasks(1);

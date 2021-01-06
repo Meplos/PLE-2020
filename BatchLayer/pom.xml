@@ -55,7 +55,7 @@
   			<configuration>
   				<archive>
   					<manifest>
-  						<mainClass>bigdata.CovidEvolution</mainClass>
+  						<mainClass>bigdata.EvolutionHBase</mainClass>
   					</manifest>
   				</archive>
   			</configuration>
