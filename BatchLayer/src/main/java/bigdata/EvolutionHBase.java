@@ -23,8 +23,9 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
 import org.apache.hadoop.hbase.client.Put;
-import org.apache.hadoop.hbase.mapreduce.TableMapReduceUtil;
+import org.apache.hadoop.hbase.mapreduce.TableOutputFormat;
 import org.apache.hadoop.hbase.mapreduce.TableReducer;
+import org.apache.hadoop.hbase.util.Bytes;
 
 import com.google.gson.JsonParser;
 import com.google.gson.JsonObject;
@@ -81,12 +82,12 @@ public class EvolutionHBase extends Configured implements Tool{
 		}
 	}
 
-	public static class EvolutionHBaseReducer extends TableReducer<Text,IntWritable,ImmutableBytesWritable> {
+	public static class EvolutionHBaseReducer extends TableReducer<Text,IntWritable,NullWritable> {
 
         private TreeMap<String, Integer> march = null;
 
         @Override
-		public void setup(TableReducer<Text,IntWritable,ImmutableBytesWritable>.Context context)
+		public void setup(TableReducer<Text,IntWritable,NullWritable>.Context context)
         throws IOException, InterruptedException {
 			this.march = new TreeMap<String, Integer>();
         }
@@ -102,13 +103,13 @@ public class EvolutionHBase extends Configured implements Tool{
         }
         
         @Override
-        public void cleanup(TableReducer<Text,IntWritable,ImmutableBytesWritable>.Context context)
+        public void cleanup(TableReducer<Text,IntWritable,NullWritable>.Context context)
 				throws IOException, InterruptedException {
 			
 			for(Map.Entry<String,Integer> pair : march.entrySet()) {
-                Put put = new Put(toBytes(context.getConfiguration().get("word")));
-                put.add(toBytes("number"),toBytes(pair.getKey()) , toBytes(Integer.toString(pair.getValue())));
-				context.write(null, put);
+                Put put = new Put(Bytes.toBytes(context.getConfiguration().get("word")));
+                put.add(Bytes.toBytes("number"),Bytes.toBytes(pair.getKey()) , Bytes.toBytes(Integer.toString(pair.getValue())));
+				context.write(NullWritable.get(), put);
 			}
 		}
 	}
@@ -126,14 +127,17 @@ public class EvolutionHBase extends Configured implements Tool{
 		job.setMapperClass(EvolutionHBaseMapper.class);
 		job.setMapOutputKeyClass(Text.class);
         job.setMapOutputValueClass(IntWritable.class);
+
+        job.setReducerClass(EvolutionHBaseReducer.class);
+        job.setOutputFormatClass(TableOutputFormat.class);
         
         job.setInputFormatClass(TextInputFormat.class);
 		TextInputFormat.addInputPath(job, new Path(args[1]));
 		
-		TableMapReduceUtil.initTableReducerJob(
+		/*TableMapReduceUtil.initTableReducerJob(
         		OUTPUT_TABLE,
                 EvolutionHBase.EvolutionHBaseReducer.class,
-                job);  
+                job); */ 
 		
 		return job.waitForCompletion(true) ? 0 : 1;
 	}
