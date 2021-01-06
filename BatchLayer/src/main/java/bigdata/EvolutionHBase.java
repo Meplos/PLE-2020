@@ -25,6 +25,7 @@ import org.apache.hadoop.util.ToolRunner;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.mapreduce.TableOutputFormat;
 import org.apache.hadoop.hbase.mapreduce.TableReducer;
+import org.apache.hadoop.hbase.mapreduce.TableMapReduceUtil;
 import org.apache.hadoop.hbase.util.Bytes;
 
 import com.google.gson.JsonParser;
@@ -32,7 +33,7 @@ import com.google.gson.JsonObject;
 
 public class EvolutionHBase extends Configured implements Tool{
 
-    private static final String OUTPUT_TABLE = "mgresse";
+    private static final String OUTPUT_TABLE = "gresse_word_pop";
 
 	public static class EvolutionHBaseMapper	extends Mapper<LongWritable, Text, Text, IntWritable> {
         
@@ -122,18 +123,20 @@ public class EvolutionHBase extends Configured implements Tool{
         conf.set(TableOutputFormat.OUTPUT_TABLE, "gresse_word_pop");
 		
 		Job job = Job.getInstance(conf, "EvolutionInMarchHBase");
-		job.setNumReduceTasks(1);
-		job.setJarByClass(EvolutionHBase.class);
+        job.setJarByClass(EvolutionHBase.class);
+        
+        job.setInputFormatClass(TextInputFormat.class);
+		TextInputFormat.addInputPath(job, new Path(args[1]));
 		
 		job.setMapperClass(EvolutionHBaseMapper.class);
 		job.setMapOutputKeyClass(Text.class);
         job.setMapOutputValueClass(IntWritable.class);
 
-        job.setReducerClass(EvolutionHBaseReducer.class);
-        job.setOutputFormatClass(TableOutputFormat.class);
+        TableMapReduceUtil.initTableReducerJob("gresse_word_pop", EvolutionHBaseReducer.class, job);
+        /*job.setReducerClass(EvolutionHBaseReducer.class);
+        job.setOutputFormatClass(TableOutputFormat.class);*/
+        job.setNumReduceTasks(1);
         
-        job.setInputFormatClass(TextInputFormat.class);
-		TextInputFormat.addInputPath(job, new Path(args[1]));
 		
 		/*TableMapReduceUtil.initTableReducerJob(
         		OUTPUT_TABLE,

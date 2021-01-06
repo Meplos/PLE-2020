@@ -55,7 +55,7 @@
   			<configuration>
   				<archive>
   					<manifest>
-  						<mainClass>bigdata.EvolutionHBase</mainClass>
+  						<mainClass>bigdata.Patterns</mainClass>
   					</manifest>
   				</archive>
   			</configuration>

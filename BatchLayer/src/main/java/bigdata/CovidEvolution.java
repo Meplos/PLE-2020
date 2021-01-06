@@ -115,9 +115,6 @@ public class CovidEvolution extends Configured implements Tool{
 		job.setNumReduceTasks(1);
 		job.setJarByClass(CovidEvolution.class);
 		
-		job.setInputFormatClass(TextInputFormat.class);
-		TextInputFormat.addInputPath(job, new Path(args[1]));
-		
 		job.setMapperClass(CovidEvolutionMapper.class);
 		job.setMapOutputKeyClass(Text.class);
 		job.setMapOutputValueClass(IntWritable.class);
