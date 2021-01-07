@@ -73,8 +73,6 @@ public class HashtagPopu extends Configured implements Tool{
     }
     
     public static class HashtagPopuCombiner extends Reducer<Text,IntWritable,Text,IntWritable> {
-
-        private TreeMap<String, Integer> march = new TreeMap<String, Integer>();
         
 		public void reduce(Text key, Iterable<IntWritable> values,Context context) throws IOException, InterruptedException {
             
@@ -83,22 +81,24 @@ public class HashtagPopu extends Configured implements Tool{
                 count++;
             }
             
-            this.march.put(key.toString(), count);
+            //this.march.put(key.toString(), count);
+
+            context.write(new Text(key.toString()), new IntWritable(count));
         }
         
-        @Override
+        /*@Override
         public void cleanup(Reducer<Text,IntWritable,Text,IntWritable>.Context context)
 				throws IOException, InterruptedException {
 			
 			for(Map.Entry<String,Integer> pair : march.entrySet()) {
                 context.write(new Text(pair.getKey()), new IntWritable(pair.getValue()));
 			}
-		}
+		}*/
 	}
 
 	public static class HashtagPopuReducer extends TableReducer<Text,IntWritable,NullWritable> {
 
-        private TreeMap<String, Integer> march = new TreeMap<String, Integer>();
+        //private TreeMap<String, Integer> march = new TreeMap<String, Integer>();
         
 		public void reduce(Text key, Iterable<IntWritable> values,Context context) throws IOException, InterruptedException {
             
@@ -107,10 +107,15 @@ public class HashtagPopu extends Configured implements Tool{
                 count++;
             }
             
-            this.march.put(key.toString(), count);
+            //this.march.put(key.toString(), count);
+
+            String[] result = key.toString().split(",");
+            Put put = new Put(Bytes.toBytes(result[1]));
+            put.add(Bytes.toBytes(result[0]),Bytes.toBytes("count") , Bytes.toBytes(Integer.toString(count)));
+            context.write(NullWritable.get(), put);
         }
         
-        @Override
+        /*@Override
         public void cleanup(TableReducer<Text,IntWritable,NullWritable>.Context context)
 				throws IOException, InterruptedException {
 			
@@ -120,7 +125,7 @@ public class HashtagPopu extends Configured implements Tool{
                 put.add(Bytes.toBytes(result[0]),Bytes.toBytes("count") , Bytes.toBytes(Integer.toString(pair.getValue())));
 				context.write(NullWritable.get(), put);
 			}
-		}
+		}*/
 	}
 
 	public int run(String args[]) throws IOException, ClassNotFoundException, InterruptedException {
@@ -155,7 +160,7 @@ public class HashtagPopu extends Configured implements Tool{
 		job.setMapperClass(HashtagPopuMapper.class);
 		job.setMapOutputKeyClass(Text.class);
         job.setMapOutputValueClass(IntWritable.class);
-        job.setCombinerClass(HashtagPopuCombiner.class);
+        //job.setCombinerClass(HashtagPopuCombiner.class);
 
         TableMapReduceUtil.initTableReducerJob("gresse_hashtag_pop", HashtagPopuReducer.class, job);
         /*job.setReducerClass(HashtagPopuReducer.class);
