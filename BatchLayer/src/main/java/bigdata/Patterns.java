@@ -12,6 +12,7 @@ public class Patterns {
 			pgd.addClass("topk", bigdata.TopK.class, "find top k elements : k input output");*/
 			pgd.addClass("wordEvolution", bigdata.EvolutionHBase.class, "apparition du mot chaque jour : mot");
 			pgd.addClass("hashtagEvolution", bigdata.HashtagPopu.class, "apparition des hastags chaque jour");
+			pgd.addClass("RTtweet", bigdata.RTStats.class, "RTstatistique");
 			exitCode = pgd.run(args);
 		} catch (Throwable e1)  {
 			e1.printStackTrace();
