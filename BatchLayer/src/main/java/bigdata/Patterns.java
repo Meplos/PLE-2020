@@ -11,6 +11,8 @@ public class Patterns {
 			pgd.addClass("sortedjoin", bigdata.SortedJoiner.class, "make a sorted reduce-side join : cities regions result");
 			pgd.addClass("topk", bigdata.TopK.class, "find top k elements : k input output");*/
 			pgd.addClass("wordEvolution", bigdata.EvolutionHBase.class, "apparition du mot chaque jour");
+			pgd.addClass("RTtweet", bigdata.RTStats.class, "RTstatistique");
+
 			exitCode = pgd.run(args);
 		} catch (Throwable e1)  {
 			e1.printStackTrace();
