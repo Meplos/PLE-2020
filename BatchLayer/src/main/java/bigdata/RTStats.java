@@ -11,20 +11,18 @@ import org.apache.spark.api.java.JavaRDD;
 
 public class RTStats {
     public static final String APP_NAME = "RT_STATS" ;
-    public static final String MASTER = "yarn-client";
     public static final String HBASE_HOST = "http://10.0.203.3:16010";
     public static final String TABLE_NAME = "gresse_tweet_pop";
 
     public static void main(String[] args) {
 
         System.out.println("App Name : "+APP_NAME);
-        System.out.println("Master : "+MASTER);
         System.out.println("HBase: "+HBASE_HOST);
 
-        SparkConf conf = new SparkConf().setAppName(APP_NAME).setMaster(MASTER);
+        SparkConf conf = new SparkConf().setAppName(APP_NAME);
         JavaSparkContext sc = new JavaSparkContext(conf);
        
-        JavaRDD<String> rawtweet = sc.textFile("/raw_data/tweet_01_03_2020");
+        JavaRDD<String> rawtweet = sc.textFile("/raw_data/tweet_01_03_2020.nljson");
 
         System.out.println(rawtweet.count());
 
