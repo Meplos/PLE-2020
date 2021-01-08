@@ -8,7 +8,12 @@ import org.apache.hadoop.hbase.mapreduce.TableInputFormat;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
 import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.JavaPairRDD;
 
+import com.google.gson.JsonParser;
+import com.google.gson.JsonObject;
+
+import scala.Tuple2;
 public class RTStats {
     public static final String APP_NAME = "RT_STATS" ;
     public static final String HBASE_HOST = "http://10.0.203.3:16010";
@@ -22,9 +27,28 @@ public class RTStats {
         SparkConf conf = new SparkConf().setAppName(APP_NAME);
         JavaSparkContext sc = new JavaSparkContext(conf);
        
-        JavaRDD<String> rawtweet = sc.textFile("/raw_data/tweet_01_03_2020.nljson");
-
+        JavaRDD<String> rawtweet = sc.textFile("/raw_data/tweet_02_03_2020.nljson");
         System.out.println(rawtweet.count());
+        JavaPairRDD<Integer,String> tweetByRT = rawtweet.mapToPair(
+            (tweet) -> {
+
+                JsonParser parser = new JsonParser();
+                JsonObject tweetJSON = null;
+                Integer rt = -1;
+
+                try {
+                    tweetJSON = parser.parse(tweet).getAsJsonObject();
+                    rt = new Integer(tweetJSON.get("retweet_count").getAsInt());
+                    
+                } catch (Exception e) {
+                   //System.out.println("Bad Tweet");
+                }
+
+                return new Tuple2<Integer,String>(rt,tweet);
+            }); 
+
+        //tweetByRT.sortByKey(false).take(1).forEach(x -> System.out.println(x._2));
+         tweetByRT.countByKey().forEach((x,y) -> System.out.println(x+" "+y));
 
 
 
