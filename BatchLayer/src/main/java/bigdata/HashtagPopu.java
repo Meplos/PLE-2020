@@ -30,21 +30,14 @@ import org.apache.hadoop.hbase.mapreduce.TableMapReduceUtil;
 import org.apache.hadoop.hbase.util.Bytes;
 
 import com.google.gson.JsonParser;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
-public class EvolutionHBase extends Configured implements Tool{
+public class HashtagPopu extends Configured implements Tool{
 
-    private static final String OUTPUT_TABLE = "gresse_word_pop";
+    private static final String OUTPUT_TABLE = "gresse_hashtag_pop";
 
-	public static class EvolutionHBaseMapper	extends Mapper<LongWritable, Text, Text, IntWritable> {
-        
-        private String word = "";
-
-        @Override
-		public void setup(Mapper<LongWritable, Text, Text, IntWritable>.Context context)
-				throws IOException, InterruptedException {
-			this.word = context.getConfiguration().get("word");
-		}
+	public static class HashtagPopuMapper extends Mapper<LongWritable, Text, Text, IntWritable> {
         
         public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
 
@@ -59,42 +52,27 @@ public class EvolutionHBase extends Configured implements Tool{
             }*/
 
             JsonObject tweetJSON = null;
-            String texte = "";
 
             try {
                 tweetJSON = parser.parse(value.toString()).getAsJsonObject();
-                texte = tweetJSON.get("text").getAsString();
+                String texte = tweetJSON.get("text").getAsString();
             } catch (Exception e) {
                 return;
             }
-            
 
-            // On récupère le texte du tweet
-            String champs[] = texte.split(" ");
-
-            // Si le tweet est seulement un RT et pas une citation on ne le prend pas en compte
-            if(champs[0]=="RT" && tweetJSON.get("is_quote_status")!=null) return ;
-
-            // Si le texte ne contient pas le mot cherché on le prend pas en ciompte
-            if(!texte.contains(word)) return ;
+            JsonArray hashtagsJson = tweetJSON.get("entities").getAsJsonObject().get("hashtags").getAsJsonArray();
 
             String date = tweetJSON.get("created_at").getAsString();
             String champs_date[] = date.split(" ");
 
-            // On renvoie le couple date / int
-			context.write(new Text(champs_date[1]+" "+champs_date[2]), new IntWritable(1));
+            for (int i = 0; i < hashtagsJson.size(); i++) {
+                String hashtag = hashtagsJson.get(i).getAsJsonObject().get("text").getAsString();
+                context.write(new Text(champs_date[1]+" "+champs_date[2]+","+hashtag), new IntWritable(1));
+            }
 		}
-	}
-
-	public static class EvolutionHBaseReducer extends TableReducer<Text,IntWritable,NullWritable> {
-
-        private TreeMap<String, Integer> march = null;
-
-        @Override
-		public void setup(TableReducer<Text,IntWritable,NullWritable>.Context context)
-        throws IOException, InterruptedException {
-			this.march = new TreeMap<String, Integer>();
-        }
+    }
+    
+    public static class HashtagPopuCombiner extends Reducer<Text,IntWritable,Text,IntWritable> {
         
 		public void reduce(Text key, Iterable<IntWritable> values,Context context) throws IOException, InterruptedException {
             
@@ -103,30 +81,59 @@ public class EvolutionHBase extends Configured implements Tool{
                 count++;
             }
             
-            this.march.put(key.toString(), count);
+            //this.march.put(key.toString(), count);
+
+            context.write(new Text(key.toString()), new IntWritable(count));
         }
         
-        @Override
+        /*@Override
+        public void cleanup(Reducer<Text,IntWritable,Text,IntWritable>.Context context)
+				throws IOException, InterruptedException {
+			
+			for(Map.Entry<String,Integer> pair : march.entrySet()) {
+                context.write(new Text(pair.getKey()), new IntWritable(pair.getValue()));
+			}
+		}*/
+	}
+
+	public static class HashtagPopuReducer extends TableReducer<Text,IntWritable,NullWritable> {
+
+        //private TreeMap<String, Integer> march = new TreeMap<String, Integer>();
+        
+		public void reduce(Text key, Iterable<IntWritable> values,Context context) throws IOException, InterruptedException {
+            
+            int count = 0;
+			for (IntWritable index : values) {
+                count++;
+            }
+            
+            //this.march.put(key.toString(), count);
+
+            String[] result = key.toString().split(",");
+            Put put = new Put(Bytes.toBytes(result[1]));
+            put.add(Bytes.toBytes(result[0]),Bytes.toBytes("count") , Bytes.toBytes(Integer.toString(count)));
+            context.write(NullWritable.get(), put);
+        }
+        
+        /*@Override
         public void cleanup(TableReducer<Text,IntWritable,NullWritable>.Context context)
 				throws IOException, InterruptedException {
 			
 			for(Map.Entry<String,Integer> pair : march.entrySet()) {
-                Put put = new Put(Bytes.toBytes(context.getConfiguration().get("word")));
-                put.add(Bytes.toBytes("number"),Bytes.toBytes(pair.getKey()) , Bytes.toBytes(Integer.toString(pair.getValue())));
+                String[] result = pair.getKey().split(",");
+                Put put = new Put(Bytes.toBytes(result[1]));
+                put.add(Bytes.toBytes(result[0]),Bytes.toBytes("count") , Bytes.toBytes(Integer.toString(pair.getValue())));
 				context.write(NullWritable.get(), put);
 			}
-		}
+		}*/
 	}
 
 	public int run(String args[]) throws IOException, ClassNotFoundException, InterruptedException {
 		Configuration conf = new Configuration();
-		String word = "";
-		word = args[0];
-        conf.set("word", word);
-        conf.set(TableOutputFormat.OUTPUT_TABLE, "gresse_word_pop");
+        conf.set(TableOutputFormat.OUTPUT_TABLE, "gresse_hashtag_pop");
 		
 		Job job = Job.getInstance(conf, "EvolutionInMarchHBase");
-        job.setJarByClass(EvolutionHBase.class);
+        job.setJarByClass(HashtagPopu.class);
         
         MultipleInputs.addInputPath(job, new Path("/raw_data/tweet_01_03_2020.nljson"), TextInputFormat.class);
         MultipleInputs.addInputPath(job, new Path("/raw_data/tweet_02_03_2020.nljson"), TextInputFormat.class);
@@ -150,26 +157,27 @@ public class EvolutionHBase extends Configured implements Tool{
         MultipleInputs.addInputPath(job, new Path("/raw_data/tweet_20_03_2020.nljson"), TextInputFormat.class);
         MultipleInputs.addInputPath(job, new Path("/raw_data/tweet_21_03_2020.nljson"), TextInputFormat.class);
 		
-		job.setMapperClass(EvolutionHBaseMapper.class);
+		job.setMapperClass(HashtagPopuMapper.class);
 		job.setMapOutputKeyClass(Text.class);
         job.setMapOutputValueClass(IntWritable.class);
+        //job.setCombinerClass(HashtagPopuCombiner.class);
 
-        TableMapReduceUtil.initTableReducerJob("gresse_word_pop", EvolutionHBaseReducer.class, job);
-        /*job.setReducerClass(EvolutionHBaseReducer.class);
+        TableMapReduceUtil.initTableReducerJob("gresse_hashtag_pop", HashtagPopuReducer.class, job);
+        /*job.setReducerClass(HashtagPopuReducer.class);
         job.setOutputFormatClass(TableOutputFormat.class);*/
         job.setNumReduceTasks(1);
         
 		
 		/*TableMapReduceUtil.initTableReducerJob(
         		OUTPUT_TABLE,
-                EvolutionHBase.EvolutionHBaseReducer.class,
+                HashtagPopu.HashtagPopuReducer.class,
                 job); */ 
 		
 		return job.waitForCompletion(true) ? 0 : 1;
 	}
 
 	public static void main(String args[]) throws Exception {
-		System.exit(ToolRunner.run(new EvolutionHBase(), args));
+		System.exit(ToolRunner.run(new HashtagPopu(), args));
 	}
 
 }
