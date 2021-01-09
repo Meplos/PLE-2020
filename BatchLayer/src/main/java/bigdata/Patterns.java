@@ -18,6 +18,7 @@ public class Patterns {
 			pgd.addClass("TopKRT", bigdata.TopKRT.class, "TopKRT");
 			pgd.addClass("TopKLanguage", bigdata.TopKLanguage.class, "TopKLanguage");
 			pgd.addClass("UserStat", bigdata.UserStat.class, "TopKRT");
+			pgd.addClass("EvolutionLang", bigdata.EvolutionLang.class, "Evolution du nombre de tweets par jour dans la langue en paramètre");
 			exitCode = pgd.run(args);
 		} catch (Throwable e1)  {
 			e1.printStackTrace();
