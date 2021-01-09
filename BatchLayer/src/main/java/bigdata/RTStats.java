@@ -45,10 +45,8 @@ public class RTStats {
                 
                 return new Tuple2<Integer,String>(rt,tweet);
             }); 
-            JavaPairRDD topKTweet = tweetByRT.sortByKey(false).take(k);
             //tweetByRT.sortByKey(false).take(1).forEach(x -> System.out.println(x._2));
             //tweetByRT.countByKey().forEach((x,y) -> System.out.println(x+" "+y));
-            topKTweet.forEach(x -> System.out.println(x._1+" "+ x.x_2));
             
             
             

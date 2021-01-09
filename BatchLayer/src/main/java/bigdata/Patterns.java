@@ -16,6 +16,8 @@ public class Patterns {
 			pgd.addClass("TweetRTSummary", bigdata.TweetSummary.class, "Nombre de rt des tweets");
 			pgd.addClass("TweetRTTopK", bigdata.RTTopK.class, "Top des tweets avec le + de rt : k");
 			pgd.addClass("TopKRT", bigdata.TopKRT.class, "TopKRT");
+			pgd.addClass("UserStat", bigdata.UserStat.class, "TopKRT");
+
 			exitCode = pgd.run(args);
 		} catch (Throwable e1)  {
 			e1.printStackTrace();
