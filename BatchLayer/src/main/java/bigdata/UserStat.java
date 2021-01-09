@@ -13,11 +13,11 @@ public class UserStat {
         JavaSparkContext sc = new JavaSparkContext(conf);
 
         JavaRDD<String> rawtweet = sc.textFile("/raw_data/tweet_01_03_2020");
-        JavaRDD<List<Tuple2>> allUserHastag = rawtweet.map(
+        /*JavaRDD<List<Tuple2>> allUserHastag = rawtweet.map(
             tweet -> {
                 
             }
-        );
+        );*/
 
     }
 }
