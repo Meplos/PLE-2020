@@ -64,6 +64,7 @@ public class EvolutionHBase extends Configured implements Tool{
             try {
                 tweetJSON = parser.parse(value.toString()).getAsJsonObject();
                 texte = tweetJSON.get("text").getAsString();
+                texte.toLowerCase();
             } catch (Exception e) {
                 return;
             }
@@ -84,17 +85,9 @@ public class EvolutionHBase extends Configured implements Tool{
             // On renvoie le couple date / int
 			context.write(new Text(champs_date[1]+" "+champs_date[2]), new IntWritable(1));
 		}
-	}
-
-	public static class EvolutionHBaseReducer extends TableReducer<Text,IntWritable,NullWritable> {
-
-        private TreeMap<String, Integer> march = null;
-
-        @Override
-		public void setup(TableReducer<Text,IntWritable,NullWritable>.Context context)
-        throws IOException, InterruptedException {
-			this.march = new TreeMap<String, Integer>();
-        }
+    }
+    
+    public static class EvolutionHBaseCombiner extends Reducer<Text,IntWritable,Text,IntWritable> {
         
 		public void reduce(Text key, Iterable<IntWritable> values,Context context) throws IOException, InterruptedException {
             
@@ -103,19 +96,25 @@ public class EvolutionHBase extends Configured implements Tool{
                 count++;
             }
             
-            this.march.put(key.toString(), count);
+            context.write(new Text(key.toString()), new IntWritable(count));
         }
-        
-        @Override
-        public void cleanup(TableReducer<Text,IntWritable,NullWritable>.Context context)
-				throws IOException, InterruptedException {
-			
-			for(Map.Entry<String,Integer> pair : march.entrySet()) {
-                Put put = new Put(Bytes.toBytes(context.getConfiguration().get("word")));
-                put.add(Bytes.toBytes("number"),Bytes.toBytes(pair.getKey()) , Bytes.toBytes(Integer.toString(pair.getValue())));
-				context.write(NullWritable.get(), put);
-			}
-		}
+
+	}
+
+	public static class EvolutionHBaseReducer extends TableReducer<Text,IntWritable,NullWritable> {
+
+        public void reduce(Text key, Iterable<IntWritable> values,Context context) throws IOException, InterruptedException {
+            
+            int count = 0;
+			for (IntWritable val : values) {
+                count=count+val.get();
+            }
+
+            Put put = new Put(Bytes.toBytes(context.getConfiguration().get("word")));
+            put.add(Bytes.toBytes("number"),Bytes.toBytes(key.toString()) , Bytes.toBytes(Integer.toString(count)));
+            context.write(NullWritable.get(), put);
+        }
+
 	}
 
 	public int run(String args[]) throws IOException, ClassNotFoundException, InterruptedException {
@@ -153,17 +152,12 @@ public class EvolutionHBase extends Configured implements Tool{
 		job.setMapperClass(EvolutionHBaseMapper.class);
 		job.setMapOutputKeyClass(Text.class);
         job.setMapOutputValueClass(IntWritable.class);
+        job.setCombinerClass(EvolutionHBaseCombiner.class);
 
         TableMapReduceUtil.initTableReducerJob("gresse_word_pop", EvolutionHBaseReducer.class, job);
         /*job.setReducerClass(EvolutionHBaseReducer.class);
         job.setOutputFormatClass(TableOutputFormat.class);*/
         job.setNumReduceTasks(1);
-        
-		
-		/*TableMapReduceUtil.initTableReducerJob(
-        		OUTPUT_TABLE,
-                EvolutionHBase.EvolutionHBaseReducer.class,
-                job); */ 
 		
 		return job.waitForCompletion(true) ? 0 : 1;
 	}

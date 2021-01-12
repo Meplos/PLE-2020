@@ -57,7 +57,7 @@ public class TopKLanguage extends Configured implements Tool{
             try{
                 String lang = tweetJSON.get("lang").getAsString();
 
-                if(lang!="und") {
+                if(!lang.equals("und")) {
                     context.write(new Text(lang), new IntWritable(1));
                 }
                 
@@ -69,7 +69,7 @@ public class TopKLanguage extends Configured implements Tool{
 
     public static class TopKLanguageCombiner extends Reducer<Text,IntWritable,Text,IntWritable> {
 
-        private TreeMap<Integer,String> topk = new TreeMap<Integer,String>();
+        //private TreeMap<Integer,String> topk = new TreeMap<Integer,String>();
         
 		public void reduce(Text key, Iterable<IntWritable> values,Context context) throws IOException, InterruptedException {
 
@@ -80,7 +80,7 @@ public class TopKLanguage extends Configured implements Tool{
 
             }
 
-            topk.put(total, key.toString());
+            //topk.put(total, key.toString());
             context.write(new Text(key.toString()), new IntWritable(total));
 
         }
@@ -88,6 +88,8 @@ public class TopKLanguage extends Configured implements Tool{
     }
     
     public static class TopKLanguageReducer extends TableReducer<Text,IntWritable,NullWritable> {
+
+        private int k = 0;
 
         private TreeMap<Integer,String> topk = new TreeMap<Integer,String>();
         
@@ -107,10 +109,12 @@ public class TopKLanguage extends Configured implements Tool{
         @Override
 		protected void cleanup(Context context)
 				throws IOException, InterruptedException {
+
+            this.k = context.getConfiguration().getInt("k", 10);
                     
             int index=topk.size();
             for(Map.Entry<Integer,String> e : topk.entrySet()){
-                if(index <= 10){
+                if(index <= this.k){
                     Put put = new Put(Bytes.toBytes(Integer.toString(index)));
                     put.add(Bytes.toBytes("total"),Bytes.toBytes("lang") , Bytes.toBytes(e.getValue()));
                     context.write(NullWritable.get(), put);
@@ -127,6 +131,9 @@ public class TopKLanguage extends Configured implements Tool{
     public int run(String args[]) throws IOException, ClassNotFoundException, InterruptedException {
 		Configuration conf = new Configuration();
         conf.set(TableOutputFormat.OUTPUT_TABLE, "gresse_langage_topk");
+        int k = 10;
+		k = Integer.valueOf(args[0]);
+        conf.setInt("k", k);
 		
 		Job job = Job.getInstance(conf, "Topk Langues");
         job.setJarByClass(TopKLanguage.class);
