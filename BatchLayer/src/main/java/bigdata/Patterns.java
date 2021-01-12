@@ -16,9 +16,10 @@ public class Patterns {
 			pgd.addClass("TweetRTSummary", bigdata.TweetSummary.class, "Nombre de rt des tweets");
 			pgd.addClass("TweetRTTopK", bigdata.RTTopK.class, "Top des tweets avec le + de rt : k");
 			pgd.addClass("TopKRT", bigdata.TopKRT.class, "TopKRT");
-			pgd.addClass("TopKLanguage", bigdata.TopKLanguage.class, "TopKLanguage");
+			pgd.addClass("TopKLanguage", bigdata.TopKLanguage.class, "TopKLanguage : k");
 			pgd.addClass("UserStat", bigdata.UserStat.class, "TopKRT");
-			pgd.addClass("EvolutionLang", bigdata.EvolutionLang.class, "Evolution du nombre de tweets par jour dans la langue en paramètre");
+			pgd.addClass("EvolutionLang", bigdata.EvolutionLang.class, "Evolution du nombre de tweets par jour dans la langue en paramètre : lang");
+			pgd.addClass("TopkLocation", bigdata.TopkLocation.class, "Topk des locations pour la langue en param : lang k");
 			exitCode = pgd.run(args);
 		} catch (Throwable e1)  {
 			e1.printStackTrace();
