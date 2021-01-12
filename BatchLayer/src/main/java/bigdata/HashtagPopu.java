@@ -66,7 +66,7 @@ public class HashtagPopu extends Configured implements Tool{
             String champs_date[] = date.split(" ");
 
             for (int i = 0; i < hashtagsJson.size(); i++) {
-                String hashtag = hashtagsJson.get(i).getAsJsonObject().get("text").getAsString();
+                String hashtag = hashtagsJson.get(i).getAsJsonObject().get("text").getAsString().toLowerCase();
                 context.write(new Text(champs_date[1]+" "+champs_date[2]+","+hashtag), new IntWritable(1));
             }
 		}
@@ -78,7 +78,7 @@ public class HashtagPopu extends Configured implements Tool{
             
             int count = 0;
 			for (IntWritable index : values) {
-                count++;
+                count=count+index.get();
             }
             
             //this.march.put(key.toString(), count);
@@ -104,7 +104,7 @@ public class HashtagPopu extends Configured implements Tool{
             
             int count = 0;
 			for (IntWritable index : values) {
-                count++;
+                count=count+index.get();
             }
             
             //this.march.put(key.toString(), count);
@@ -160,7 +160,7 @@ public class HashtagPopu extends Configured implements Tool{
 		job.setMapperClass(HashtagPopuMapper.class);
 		job.setMapOutputKeyClass(Text.class);
         job.setMapOutputValueClass(IntWritable.class);
-        //job.setCombinerClass(HashtagPopuCombiner.class);
+        job.setCombinerClass(HashtagPopuCombiner.class);
 
         TableMapReduceUtil.initTableReducerJob("gresse_hashtag_pop", HashtagPopuReducer.class, job);
         /*job.setReducerClass(HashtagPopuReducer.class);
