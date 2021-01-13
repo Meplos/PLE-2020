@@ -111,7 +111,7 @@ public class HashtagPopu extends Configured implements Tool{
 
             String[] result = key.toString().split(",");
             Put put = new Put(Bytes.toBytes(result[1]));
-            put.add(Bytes.toBytes(result[0]),Bytes.toBytes("count") , Bytes.toBytes(Integer.toString(count)));
+            put.add(Bytes.toBytes("days"),Bytes.toBytes(result[0]) , Bytes.toBytes(Integer.toString(count)));
             context.write(NullWritable.get(), put);
         }
         
