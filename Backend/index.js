@@ -16,7 +16,7 @@ app.get("/word_pop", (req, res) => {
   let result;
   client.table("gresse_word_pop").scan(
     {
-      batch: 10,
+      batch: 100,
     },
     function (err, rows) {
       result = rows;
@@ -30,24 +30,27 @@ app.get("/word_pop", (req, res) => {
   );
 });
 
-app.get("/hashtag_pop", (req, res) => {
-  client.table("gresse_hashtag_pop").scan(
-    {
-      startRow: "covid19",
-      maxVersions: 1,
-      batch: 10,
-    },
-    function (err, rows) {
-      console.log("ERR: " + err);
-      console.log(rows);
-      result = rows;
-      res.status(200).send(result);
+app.get("/hashtag_pop/:tag", (req, res) => {
+  const rows = [];
+  const tag = req.params.tag;
+  client
+    .table("gresse_hashtag_pop")
+    .row(tag)
+    .get("days", (err, chunks) => {
       if (err) {
-        res.sendStatus(500);
+        console.log("ERR " + err);
+        res.send(err.status);
+      } else {
+        console.log("Size : " + chunks.length);
+        res.status(200).send(chunks);
       }
-    }
-  );
+    });
+  /*scanner.get((err, chunks) => {
+    console.error("ERR " + err);
+    console.log("Chunks : " + chunks);
+  });*/
 });
+
 app.get("/", (req, res) => res.status(400).send("Welcome 👌!"));
 
 app.listen(PORT, () => console.log("Server Listening"));
