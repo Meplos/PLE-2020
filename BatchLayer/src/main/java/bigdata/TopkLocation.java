@@ -133,6 +133,9 @@ public class TopkLocation extends Configured implements Tool{
                     Put put = new Put(Bytes.toBytes(lang));
                     put.add(Bytes.toBytes("rank"),Bytes.toBytes(Integer.toString(index)) , Bytes.toBytes(e.getValue()));
                     context.write(NullWritable.get(), put);
+                    Put put2 = new Put(Bytes.toBytes(lang));
+                    put2.add(Bytes.toBytes("rank"),Bytes.toBytes(e.getValue()) , Bytes.toBytes(Integer.toString(e.getKey())));
+                    context.write(NullWritable.get(), put2);
                 }
                 index--;
             }
