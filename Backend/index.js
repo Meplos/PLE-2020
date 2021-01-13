@@ -12,14 +12,11 @@ app.use(bodyParser.urlencoded());
 app.use(bodyParser.json());
 app.use(cors());
 
-app.get("/", (req, res) => res.status(400).send("Welcome 👌!"));
-
 app.get("/word_pop", (req, res) => {
   let result;
   client.table("gresse_word_pop").scan(
     {
-      startRow: "confinement",
-      maxVersions: 1,
+      batch: 10,
     },
     function (err, rows) {
       result = rows;
@@ -33,6 +30,26 @@ app.get("/word_pop", (req, res) => {
   );
 });
 
+app.get("/hashtag_pop", (req, res) => {
+  client.table("gresse_hashtag_pop").scan(
+    {
+      startRow: "covid19",
+      maxVersions: 1,
+      batch: 10,
+    },
+    function (err, rows) {
+      console.log("ERR: " + err);
+      console.log(rows);
+      result = rows;
+      res.status(200).send(result);
+      if (err) {
+        res.sendStatus(500);
+      }
+    }
+  );
+});
+app.get("/", (req, res) => res.status(400).send("Welcome 👌!"));
+
 app.listen(PORT, () => console.log("Server Listening"));
 
 function groupArrayOfObjects(list, key) {
@@ -41,3 +58,26 @@ function groupArrayOfObjects(list, key) {
     return rv;
   }, {});
 }
+
+/** /word_pop result
+ * 
+ *  {
+ *      word: [
+ *          {
+ *          key: 'virus',
+            column: 'number:Mar 1',
+            timestamp: 1610460353756,
+            '$': '16' 
+            }, {
+              *          key: 'virus',
+            column: 'number:Mar 2',
+            timestamp: 1610460353756,
+            '$': '163' 
+   
+            }
+ *      ], 
+ *    confinement:  ...
+ * }
+ * 
+ * 
+ */
