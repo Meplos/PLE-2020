@@ -6,37 +6,45 @@
         <h1>Hashtag Evolution</h1>
       </v-row>
       <v-row
+      align="center"
       justify="center"
       class="mt-10">
         <v-btn class="mr-5"
           rounded
+          id="covid19"
           color="primary"
-          @click="wichButton"
+          @click="wichButton($event)"
           dark
         >
           covid19
         </v-btn>
         <v-btn class="mr-5"
           rounded
+          id="bts"
           color="primary"
-          @click="wichButton"
+          @click="wichButton($event)"
           dark
         >
           bts
         </v-btn>
+        <div id="input">
+          <v-text-field label="Search hashtag (without #)"
+            @keydown.enter="searchHashtag($event)"
+          ></v-text-field>
+        </div>
       </v-row>
       <v-row
       justify="center"
       class="mt-10">
       <div v-if="hashtagEvolutionData.length >0" >
-        <line-chart :chartData="hashtagEvolutionData" :chartColors="chartColors" :options="chartOptions" :height="600" :width="900" label="covid19"></line-chart>
+        <line-chart :chartData="hashtagEvolutionData" :chartColors="chartColors" :options="chartOptions" :height="600" :width="900" :label="label"></line-chart>
       </div>
       </v-row>
     </v-container>
 </template>
 
 <script>
-//import axios from 'axios';
+import axios from 'axios';
 import LineChart from '../components/LineChart';
 
 export default {
@@ -45,29 +53,7 @@ export default {
     LineChart
   },
   data: () => ({
-    hashtagEvolutionData: [
-      {date: 'Mar 01', total: 1711},
-      {date: 'Mar 02', total: 3504},
-      {date: 'Mar 03', total: 2960},
-      {date: 'Mar 04', total: 2418},
-      {date: 'Mar 05', total: 2790},
-      {date: 'Mar 06', total: 2730},
-      {date: 'Mar 07', total: 3309},
-      {date: 'Mar 08', total: 4217},
-      {date: 'Mar 09', total: 4370},
-      {date: 'Mar 10', total: 4789},
-      {date: 'Mar 11', total: 7344},
-      {date: 'Mar 12', total: 10235},
-      {date: 'Mar 13', total: 8951},
-      {date: 'Mar 14', total: 9799},
-      {date: 'Mar 15', total: 8092},
-      {date: 'Mar 16', total: 10310},
-      {date: 'Mar 17', total: 11629},
-      {date: 'Mar 18', total: 12437},
-      {date: 'Mar 19', total: 14361},
-      {date: 'Mar 20', total: 11548},
-      {date: 'Mar 21', total: 10444},
-    ],
+    hashtagEvolutionData: [],
     chartColors: {
       borderColor: "rgba(30, 250, 30, 1)",
       pointBorderColor: "#656176",
@@ -76,12 +62,44 @@ export default {
     },
     chartOptions: {
       responsive: true,
-    }
+    },
+    label: "",
   }),
   methods: {
-    wichButton(){
-      console.log("bouton");
-    }
+    async wichButton(event){
+      let targetId = event.currentTarget.id;
+      await this.getData(targetId);
+    },
+    async timeout(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    },
+    async searchHashtag(event){
+      let word = event.srcElement._value;
+      word.toLowerCase();
+      await this.getData(word);
+    },
+    async getData(word){
+      this.label = word;
+      const response = await axios("http://localhost:7000/hashtag_pop/"+word);
+      const days = response.data.map(day => {
+        let col = day.column.split(":")
+        return col[1];
+      });
+      const value = response.data.map(day => day.$);
+      const result = [];
+      for (let index = 0; index < days.length-1; index++) {
+        result.push({date: days[index], total: value[index]})
+      }
+      this.hashtagEvolutionData = [];
+      await this.timeout(50);
+      this.hashtagEvolutionData = result;
+    },
   },
 }
 </script>
+
+<style scoped>
+#input{
+  width: 250px;
+  }
+</style>
