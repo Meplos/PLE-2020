@@ -58,10 +58,23 @@ app.get("/hashtag_pop/:tag", (req, res) => {
         res.status(200).send(chunks);
       }
     });
-  /*scanner.get((err, chunks) => {
-    console.error("ERR " + err);
-    console.log("Chunks : " + chunks);
-  });*/
+});
+
+app.get("/language_pop/:lang", (req, res) => {
+  const rows = [];
+  const lang = req.params.lang;
+  client
+    .table("gresse_langage_evolution")
+    .row(lang)
+    .get("days", (err, chunks) => {
+      if (err) {
+        console.log("ERR " + err);
+        res.send(err.status);
+      } else {
+        console.log("Size : " + chunks.length);
+        res.status(200).send(chunks);
+      }
+    });
 });
 
 app.get("/", (req, res) => res.status(400).send("Welcome 👌!"));
