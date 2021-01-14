@@ -97,7 +97,7 @@ public class EvolutionLang extends Configured implements Tool{
             }
             
             Put put = new Put(Bytes.toBytes(context.getConfiguration().get("lang")));
-            put.add(Bytes.toBytes(key.toString()),Bytes.toBytes("count") , Bytes.toBytes(Integer.toString(count)));
+            put.add(Bytes.toBytes("days"),Bytes.toBytes(key.toString()) , Bytes.toBytes(Integer.toString(count)));
             context.write(NullWritable.get(), put);
         }
 
