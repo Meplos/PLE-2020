@@ -61,18 +61,15 @@ public class TopkLocation extends Configured implements Tool{
                 location = tweetJSON.get("user").getAsJsonObject().get("location").getAsString().toLowerCase();
             } catch (Exception e) {
                 return;
-            }
+            }          
 
-            if(location.contains(",")){
-                String[] loc = location.split(",");
-                if(loc.length>0){
-                    location = loc[0]; 
+            if(tempLang.equals(this.lang) || tempLang.equals("world")){
+                if(location.contains(",")){
+                    String[] loc = location.split(",");
+                    if(loc.length>0){
+                        location = loc[0]; 
+                    }
                 }
-            }
-            
-
-            if(tempLang.equals(this.lang)){
-
                 // On renvoie le couple date / int
                 context.write(new Text(location), new IntWritable(1));
             }
@@ -81,8 +78,6 @@ public class TopkLocation extends Configured implements Tool{
     }
     
     public static class TopkLocationCombiner extends Reducer<Text,IntWritable,Text,IntWritable> {
-
-        //private TreeMap<Integer,String> topk = new TreeMap<Integer,String>();
         
 		public void reduce(Text key, Iterable<IntWritable> values,Context context) throws IOException, InterruptedException {
 
@@ -93,7 +88,6 @@ public class TopkLocation extends Configured implements Tool{
 
             }
 
-            //topk.put(total, key.toString());
             context.write(new Text(key.toString()), new IntWritable(total));
 
         }
@@ -131,10 +125,11 @@ public class TopkLocation extends Configured implements Tool{
             for(Map.Entry<Integer,String> e : topk.entrySet()){
                 if(index <= this.k){
                     Put put = new Put(Bytes.toBytes(lang));
-                    put.add(Bytes.toBytes("rank"),Bytes.toBytes(Integer.toString(index)) , Bytes.toBytes(e.getValue()));
+                    //put.add(Bytes.toBytes("rank"),Bytes.toBytes(Integer.toString(index)) , Bytes.toBytes(e.getValue()));
+                    put.add(Bytes.toBytes(Integer.toString(index)),Bytes.toBytes("name") , Bytes.toBytes(e.getValue()));
                     context.write(NullWritable.get(), put);
                     Put put2 = new Put(Bytes.toBytes(lang));
-                    put2.add(Bytes.toBytes("rank"),Bytes.toBytes(e.getValue()) , Bytes.toBytes(Integer.toString(e.getKey())));
+                    put2.add(Bytes.toBytes(Integer.toString(index)),Bytes.toBytes("total") , Bytes.toBytes(Integer.toString(e.getKey())));
                     context.write(NullWritable.get(), put2);
                 }
                 index--;

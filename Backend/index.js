@@ -25,13 +25,17 @@ app.get("/word_pop", (req, res) => {
         res.status(400).send(err);
         return;
       }
+      result["words"]=[];
       rows.forEach((element) => {
         if (!result[element.key]) {
           result[element.key] = [];
         }
+        if(!result["words"].includes(element.key)){
+          result["words"].push(element.key);
+        }
         const obj = {};
         obj.date = element.column.split(":")[1];
-        obj.count = element.$;
+        obj.total = element.$;
         result[element.key].push(obj);
       });
       console.log(result);

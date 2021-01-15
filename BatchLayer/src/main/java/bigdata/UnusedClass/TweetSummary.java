@@ -122,7 +122,6 @@ public class TweetSummary extends Configured implements Tool{
         MultipleInputs.addInputPath(job, new Path("/raw_data/tweet_21_03_2020.nljson"), TextInputFormat.class);*/
 		
         job.setMapperClass(TweetSummaryMapper.class);
-        /*job.setOutputFormatClass(TableOutputFormat.class);*/
 		job.setMapOutputKeyClass(NullWritable.class);
         job.setMapOutputValueClass(Text.class);
 
@@ -130,12 +129,6 @@ public class TweetSummary extends Configured implements Tool{
         TableMapReduceUtil.initTableReducerJob("gresse_tweet_summary", TweetSummaryReducer.class, job);
         job.setReducerClass(TweetSummaryReducer.class);
         job.setNumReduceTasks(1);
-        
-		
-		/*TableMapReduceUtil.initTableReducerJob(
-        		OUTPUT_TABLE,
-                TweetSummary.TweetSummaryReducer.class,
-                job); */ 
 		
 		return job.waitForCompletion(true) ? 0 : 1;
 	}

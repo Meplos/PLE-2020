@@ -23,8 +23,6 @@ export default {
 
         const {borderColor, pointBorderColor, pointBackgroundColor, backgroundColor } = this.chartColors;
 
-        console.log(dates);
-
         this.renderChart({
             labels: dates,
             datasets : [{

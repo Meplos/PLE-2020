@@ -8,35 +8,28 @@
       <v-row
       justify="center"
       class="mt-10">
-        <v-btn class="mr-5"
+        <v-btn class="mr-5" v-for="btn in words"  :key="btn.index"
+          :id="btn"
           rounded
           color="primary"
-          @click="wichButton"
+          @click="wichButton($event)"
           dark
         >
-          Confinement
-        </v-btn>
-        <v-btn class="mr-5"
-          rounded
-          color="primary"
-          @click="wichButton"
-          dark
-        >
-          Virus
+          {{ btn }}
         </v-btn>
       </v-row>
       <v-row
       justify="center"
       class="mt-10">
       <div v-if="wordEvolutionData.length >0" >
-        <line-chart :chartData="wordEvolutionData" :chartColors="chartColors" :options="chartOptions" :height="600" :width="900" label="confinement"></line-chart>
+        <line-chart :chartData="wordEvolutionData" :chartColors="chartColors" :options="chartOptions" :height="600" :width="900" :label="label"></line-chart>
       </div>
       </v-row>
     </v-container>
 </template>
 
 <script>
-//import axios from 'axios';
+import axios from 'axios';
 import LineChart from '../components/LineChart';
 
 export default {
@@ -45,29 +38,7 @@ export default {
     LineChart
   },
   data: () => ({
-    wordEvolutionData: [
-      {date: 'Mar 01', total: 20},
-      {date: 'Mar 02', total: 28},
-      {date: 'Mar 03', total: 24},
-      {date: 'Mar 04', total: 29},
-      {date: 'Mar 05', total: 26},
-      {date: 'Mar 06', total: 32},
-      {date: 'Mar 07', total: 58},
-      {date: 'Mar 08', total: 47},
-      {date: 'Mar 09', total: 53},
-      {date: 'Mar 10', total: 59},
-      {date: 'Mar 11', total: 66},
-      {date: 'Mar 12', total: 171},
-      {date: 'Mar 13', total: 481},
-      {date: 'Mar 14', total: 719},
-      {date: 'Mar 15', total: 2349},
-      {date: 'Mar 16', total: 6647},
-      {date: 'Mar 17', total: 6351},
-      {date: 'Mar 18', total: 5485},
-      {date: 'Mar 19', total: 5909},
-      {date: 'Mar 20', total: 6135},
-      {date: 'Mar 21', total: 5888},
-    ],
+    wordEvolutionData: [],
     chartColors: {
       borderColor: "rgba(250, 30, 30, 1)",
       pointBorderColor: "#656176",
@@ -76,12 +47,33 @@ export default {
     },
     chartOptions: {
       responsive: true,
-    }
+    },
+    words: [],
+    label: "",
   }),
+  mounted(){
+    this.generateButton();
+  },
   methods: {
-    wichButton(){
-      console.log("bouton");
-    }
+    async wichButton(){
+      let targetId = event.currentTarget.id;
+      this.label = targetId;
+      const response = await axios("http://localhost:7000/word_pop");
+      this.wordEvolutionData = [];
+      await this.timeout(50);
+      const values = response.data[targetId]
+      values.splice(values.length-1,1);
+      console.log(values);
+      this.wordEvolutionData = values;
+    },
+    async generateButton(){
+      const response = await axios("http://localhost:7000/word_pop");
+      this.words = response.data.words
+
+    },
+    async timeout(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    } 
   },
 }
 </script>
