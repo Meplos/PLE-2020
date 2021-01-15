@@ -3,7 +3,7 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const hbase = require("hbase");
 
-const PORT = 7000;
+const PORT = 6783;
 const client = hbase({ host: "127.0.0.1", port: 8080 });
 
 const app = express();
@@ -77,6 +77,39 @@ app.get("/language_pop/:lang", (req, res) => {
     });
 });
 
+app.get("/language_topk/", (req, res) => {
+  const rows = [];
+
+  client.table("gresse_langage_topk").scan({}, (err, chunks) => {
+    if (err) {
+      console.log("ERR " + err);
+      res.send(err.status);
+    } else {
+      chunks.forEach((element) => {
+        let isAlreadyDefined = false;
+        let obj = {};
+        console.log(chunks.find((x) => x.key === element.key));
+        if (!rows.find((x) => x.key === element.key)) {
+          obj.key = element.key;
+        } else {
+          isAlreadyDefined = true;
+          obj = rows.find((x) => x.key === element.key);
+        }
+        let col = element.column.split(":")[1];
+        if (col === "count") {
+          obj.count = element.$;
+        } else {
+          obj.lang = element.$;
+        }
+        if (!isAlreadyDefined) rows.push(obj);
+        console.log(rows);
+      });
+    }
+    console.log(rows);
+
+    res.status(200).send(rows);
+  });
+});
 app.get("/", (req, res) => res.status(400).send("Welcome 👌!"));
 
 app.listen(PORT, () => console.log("Server Listening"));
