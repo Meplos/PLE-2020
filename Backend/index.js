@@ -25,12 +25,12 @@ app.get("/word_pop", (req, res) => {
         res.status(400).send(err);
         return;
       }
-      result["words"]=[];
+      result["words"] = [];
       rows.forEach((element) => {
         if (!result[element.key]) {
           result[element.key] = [];
         }
-        if(!result["words"].includes(element.key)){
+        if (!result["words"].includes(element.key)) {
           result["words"].push(element.key);
         }
         const obj = {};
@@ -106,13 +106,49 @@ app.get("/language_topk/", (req, res) => {
           obj.lang = element.$;
         }
         if (!isAlreadyDefined) rows.push(obj);
-        console.log(rows);
       });
     }
-    console.log(rows);
-
+    rows.sort(compare);
     res.status(200).send(rows);
   });
+});
+
+app.get("/location_topk/:loc", (req, res) => {
+  const loc = req.params.loc;
+  const rows = [];
+  client
+    .table("gresse_location_topk")
+    .row(loc)
+    .get("", (err, chunks) => {
+      if (err) {
+        console.log("ERR " + err);
+        res.send(err.status);
+      } else {
+        console.log("Size : " + chunks.length);
+        chunks.forEach((element) => {
+          let isAlreadyDefined = false;
+          let obj = {};
+          let key = element.column.split(":")[0];
+          let col = element.column.split(":")[1];
+          console.log(chunks.find((x) => x.key === key));
+          if (!rows.find((x) => x.key === key)) {
+            obj.key = key;
+          } else {
+            isAlreadyDefined = true;
+            obj = rows.find((x) => x.key === key);
+          }
+          if (col === "total") {
+            obj.count = element.$;
+          } else {
+            obj.name = element.$;
+          }
+          if (!isAlreadyDefined) rows.push(obj);
+        });
+        console.log(chunks);
+        rows.sort(compare);
+        res.status(200).send(rows);
+      }
+    });
 });
 app.get("/", (req, res) => res.status(400).send("Welcome 👌!"));
 
@@ -124,6 +160,12 @@ function groupArrayOfObjects(list, key) {
     return rv;
   }, {});
 }
+
+let compare = (x, y) => {
+  if (eval(x.key) > eval(y.key)) return 1;
+  else if (eval(x.key) < eval(y.key)) return -1;
+  else return 0;
+};
 
 /** /word_pop result
  * 
