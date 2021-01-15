@@ -68,8 +68,6 @@ public class TopKLanguage extends Configured implements Tool{
     }
 
     public static class TopKLanguageCombiner extends Reducer<Text,IntWritable,Text,IntWritable> {
-
-        //private TreeMap<Integer,String> topk = new TreeMap<Integer,String>();
         
 		public void reduce(Text key, Iterable<IntWritable> values,Context context) throws IOException, InterruptedException {
 
@@ -80,7 +78,6 @@ public class TopKLanguage extends Configured implements Tool{
 
             }
 
-            //topk.put(total, key.toString());
             context.write(new Text(key.toString()), new IntWritable(total));
 
         }

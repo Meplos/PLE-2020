@@ -44,11 +44,6 @@ public class CovidEvolution extends Configured implements Tool{
 
             JsonObject tweetJSON = parser.parse(value.toString()).getAsJsonObject();
 
-            /*if(tweetJSON.isJsonNull()){
-                System.out.println("tweetJSON is null");
-                return;
-            }*/
-
             String texte = "";
 
             try {

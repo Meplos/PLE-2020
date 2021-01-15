@@ -108,15 +108,6 @@ public class TotalImpressionsByUser extends Configured implements Tool{
 		job.setOutputFormatClass(TextOutputFormat.class);
 		job.setInputFormatClass(TextInputFormat.class);
 
-		/*try {
-			FileInputFormat.addInputPath(job, new Path(args[0]));
-			FileOutputFormat.setOutputPath(job, new Path(args[1]));
-		} 
-		catch (Exception e) {
-			System.out.println(" bad arguments, waiting for 2 arguments [inputURI] [outputURI]");
-			return -1;
-		}*/
-
 		TextInputFormat.addInputPath(job, new Path(args[0]));
 		TextOutputFormat.setOutputPath(job, new Path(args[1]));
 

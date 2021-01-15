@@ -51,13 +51,6 @@ public class EvolutionHBase extends Configured implements Tool{
             // On parse chaque ligne en objet JSON
             JsonParser parser = new JsonParser();
 
-            //JsonObject tweetJSON = parser.parse(value.toString()).getAsJsonObject();
-
-            /*if(tweetJSON.isJsonNull()){
-                System.out.println("tweetJSON is null");
-                return;
-            }*/
-
             JsonObject tweetJSON = null;
             String texte = "";
 
@@ -155,8 +148,6 @@ public class EvolutionHBase extends Configured implements Tool{
         job.setCombinerClass(EvolutionHBaseCombiner.class);
 
         TableMapReduceUtil.initTableReducerJob("gresse_word_pop", EvolutionHBaseReducer.class, job);
-        /*job.setReducerClass(EvolutionHBaseReducer.class);
-        job.setOutputFormatClass(TableOutputFormat.class);*/
         job.setNumReduceTasks(1);
 		
 		return job.waitForCompletion(true) ? 0 : 1;
