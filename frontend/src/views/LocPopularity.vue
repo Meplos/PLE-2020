@@ -12,6 +12,7 @@
           rounded
           color="primary"
           @click="wichButton"
+          id="fr"
           dark
         >
           fr
@@ -20,6 +21,7 @@
           rounded
           color="primary"
           @click="wichButton"
+          id="en"
           dark
         >
           en
@@ -28,6 +30,7 @@
           rounded
           color="primary"
           @click="wichButton"
+          id="es"
           dark
         >
           es
@@ -36,17 +39,10 @@
           rounded
           color="primary"
           @click="wichButton"
+          id="ja"
           dark
         >
           ja
-        </v-btn>
-        <v-btn class="mr-5"
-          rounded
-          color="primary"
-          @click="wichButton"
-          dark
-        >
-          world
         </v-btn>
       </v-row>
       <v-row
@@ -60,7 +56,7 @@
 </template>
 
 <script>
-//import axios from 'axios';
+import axios from 'axios';
 import HorizontalBar from '../components/HorizontalBar.vue';
 
 export default {
@@ -89,9 +85,26 @@ export default {
     }
   }),
   methods: {
-    wichButton(){
-      console.log("bouton");
-    }
+    async wichButton(){
+      let targetId = event.currentTarget.id;
+      this.label = targetId;
+      const url = "http://localhost:7000/location_topk/"+targetId
+      let response = await axios(url)
+      console.log(response)
+      const days = response.data.map(day =>  day.name);
+      const value = response.data.map(day => day.count);
+      const result = [];
+      for (let index = 0; index < 10; index++) {
+        result.push({date: days[index], total: value[index]})
+      }
+      console.log(result);
+      this.locPopularityData = [];
+      await this.timeout(50);
+      this.locPopularityData = result;
+    },
+    async timeout(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    } 
   },
 }
 </script>
