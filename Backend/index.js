@@ -3,7 +3,7 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const hbase = require("hbase");
 
-const PORT = 6783;
+const PORT = 7000;
 const client = hbase({ host: "127.0.0.1", port: 8080 });
 
 const app = express();

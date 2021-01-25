@@ -47,7 +47,7 @@
 </template>
 
 <script>
-//import axios from 'axios';
+import axios from 'axios';
 import HorizontalBar from '../components/HorizontalBar.vue';
 
 export default {
@@ -80,31 +80,26 @@ export default {
     async wichButton(){
       let targetId = event.currentTarget.id;
       this.label = targetId;
-      //const response = await axios("http://localhost:7000/lang_pop");
-      //console.log(response);
-      /*this.wordEvolutionData = [];
-      await this.timeout(50);
-      const values = response.data[targetId]
-      values.splice(values.length-1,1);
-      console.log(values);
-      this.wordEvolutionData = values;*/
+      let response = await axios("http://localhost:7000/language_topk/")
+      response.data.shift();
+      const days = response.data.map(day =>  day.lang);
+      const value = response.data.map(day => day.count);
+      const result = [];
+      let max = 0;
       if(targetId=="5"){
-        let result = [];
-        for (let index = 0; index < parseInt(targetId); index++) {
-          result.push(this.langagePop10[index]);
-        }
-        this.languagePopularityData = [];
-        await this.timeout(50);
-        this.languagePopularityData = result;
+        max=5
       }else if(targetId=="10"){
-        let result = [];
-        for (let index = 0; index < parseInt(targetId); index++) {
-          result.push(this.langagePop10[index]);
-        }
-        this.languagePopularityData = [];
-        await this.timeout(50);
-        this.languagePopularityData = result;
+        max=10
+      }else if(targetId=="15"){
+        max=15
       }
+      for (let index = 0; index < max; index++) {
+        result.push({date: days[index], total: value[index]})
+      }
+      console.log(result);
+      this.languagePopularityData = [];
+      await this.timeout(50);
+      this.languagePopularityData = result;
     },
     async timeout(ms) {
       return new Promise(resolve => setTimeout(resolve, ms));
